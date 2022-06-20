@@ -130,7 +130,6 @@ function BattlePage(props) {
           opAction = data.actionOne
         }
         if (opView.current) {
-          // opView.current.innerText = opAction;
           opView.current.style.backgroundColor = "#2197ff"
           opView.current.style.backgroundImage =
             opAction === "shot"
@@ -152,7 +151,6 @@ function BattlePage(props) {
         }
 
         if (myView.current) {
-          // myView.current.innerText = myAction;
           myView.current.style.backgroundColor = "#2197ff"
           myView.current.style.backgroundImage =
             myAction === "shot"
