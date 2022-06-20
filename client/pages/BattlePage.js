@@ -1,142 +1,137 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react"
 import {
   BrowserRouter as Router,
   useLocation,
   useNavigate,
-} from "react-router-dom";
+} from "react-router-dom"
 
-import io from "socket.io-client";
-import url from "../url";
-import { BsBackspaceFill } from "react-icons/bs";
-import { AiOutlineHeart } from "react-icons/ai";
-import { GiBullets } from "react-icons/gi";
-import SettingsOption from "../comps/SettingsOption";
-import aim from "../assets/aim.png";
-import bullet from "../assets/bullet.png";
-import shield from "../assets/shield.png";
+import io from "socket.io-client"
+import url from "../url"
+import { BsBackspaceFill } from "react-icons/bs"
+import { AiOutlineHeart } from "react-icons/ai"
+import { GiBullets } from "react-icons/gi"
+import SettingsOption from "../comps/SettingsOption"
+import aim from "../assets/aim.png"
+import bullet from "../assets/bullet.png"
+import shield from "../assets/shield.png"
 
-const socket = io.connect(url + "/");
+const socket = io.connect(url + "/")
 
 function BattlePage(props) {
-  const navigate = useNavigate();
-  const [me, setMe] = useState();
-  const [opponent, setOpponent] = useState(props.opponent);
-  const firstEnter = useRef(true);
-  const fidbackTextShown = useRef();
+  const navigate = useNavigate()
+  const [me, setMe] = useState()
+  const [opponent, setOpponent] = useState(props.opponent)
+  const firstEnter = useRef(true)
+  const fidbackTextShown = useRef()
 
   // flow consts
-  const [meReadyToPlay, setMeReadyToPlay] = useState(false);
-  const [opponentReadyToPlay, setOpponentReadyToPlay] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
-  const [rematchOfferToYou, setRematchOfferToYou] = useState(false);
-  const [iOfferedRemach, setIOfferedRemach] = useState(true);
-  const [isWaitingForRematch, setIsWaitingForRematch] = useState(false);
-  const [isRematch, setIsRematch] = useState(false);
-  const [opponentLeft, setOpponentLeft] = useState(false);
+  const [meReadyToPlay, setMeReadyToPlay] = useState(false)
+  const [opponentReadyToPlay, setOpponentReadyToPlay] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [gameOver, setGameOver] = useState(false)
+  const [rematchOfferToYou, setRematchOfferToYou] = useState(false)
+  const [iOfferedRemach, setIOfferedRemach] = useState(true)
+  const [isWaitingForRematch, setIsWaitingForRematch] = useState(false)
+  const [isRematch, setIsRematch] = useState(false)
+  const [opponentLeft, setOpponentLeft] = useState(false)
 
   // game consts
-  const [myAction, setMyAction] = useState(null);
-  const myView = useRef();
-  const opView = useRef();
-  const shots = useRef(0);
-  const lives = useRef(0);
-  const opLives = useRef(0);
-  const [time, setTime] = useState(null);
-  const [openingTime, setOpeningTime] = useState(null);
+  const [myAction, setMyAction] = useState(null)
+  const myView = useRef()
+  const opView = useRef()
+  const shots = useRef(0)
+  const lives = useRef(0)
+  const opLives = useRef(0)
+  const [time, setTime] = useState(null)
+  const [openingTime, setOpeningTime] = useState(null)
 
   useEffect(() => {
     if (firstEnter.current) {
-      setMe({ userName: props.userName, id: socket.id });
-      firstEnter.current = false;
+      setMe({ userName: props.userName, id: socket.id })
+      firstEnter.current = false
       socket.emit("updateMe", {
         userName: props.userName,
         id: socket.id,
         where: "In Battle!",
         action: null,
-      });
+      })
 
       socket.emit(
         "joinMeToRoom",
         { userName: props.userName, id: socket.id },
         props.roomNum
-      );
+      )
       socket.on("openingGameFromServer", (time, gameLives) => {
-        setGameOver(false);
-        setRematchOfferToYou(false);
-        setIOfferedRemach(true);
-        setIsWaitingForRematch(false);
-        setIsRematch(false);
-        setOpponentLeft(false);
-        setIsPlaying(true);
-        setTime(null);
-        shots.current = 0;
-        lives.current = gameLives;
-        opLives.current = gameLives;
+        setGameOver(false)
+        setRematchOfferToYou(false)
+        setIOfferedRemach(true)
+        setIsWaitingForRematch(false)
+        setIsRematch(false)
+        setOpponentLeft(false)
+        setIsPlaying(true)
+        setTime(null)
+        shots.current = 0
+        lives.current = gameLives
+        opLives.current = gameLives
         if (fidbackTextShown.current) {
-          fidbackTextShown.current.innerText = "";
-          fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16,0)";
+          fidbackTextShown.current.innerText = ""
+          fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16,0)"
         }
-        console.log("TIME opening FROM SERVER: ", time);
-        setOpeningTime(time);
-      });
+        setOpeningTime(time)
+      })
       socket.on("roundInGameFromServer", (time) => {
-        console.log("TIME FROM SERVER: ", time);
-        setTime(time);
-      });
+        setTime(time)
+      })
 
       socket.on("opponentIsReadyToPlay", (opponent, readyOrNot) => {
-        setOpponentReadyToPlay(readyOrNot);
-        setOpponent(opponent);
+        setOpponentReadyToPlay(readyOrNot)
+        setOpponent(opponent)
         if (meReadyToPlay) {
-          socket.emit("openingGame", props.roomNum);
+          socket.emit("openingGame", props.roomNum)
         }
-      });
+      })
 
       socket.on("rematchOfferToYou", () => {
-        setRematchOfferToYou(true);
-        setIOfferedRemach(false);
-      });
+        setRematchOfferToYou(true)
+        setIOfferedRemach(false)
+      })
 
       socket.on("oppenentLeftTheGame", () => {
         if (fidbackTextShown.current) {
-          fidbackTextShown.current.innerText = `${props.opponent.userName} עזב את המשחק `;
-          fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16)";
+          fidbackTextShown.current.innerText = `${props.opponent.userName} עזב את המשחק `
+          fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16)"
         }
-        console.log("140-140", props.roomNum);
-        // leaveGameToGameLobby();
-        socket.emit("leaveRoom", props.roomNum);
+        socket.emit("leaveRoom", props.roomNum)
 
         const timeTemp = setTimeout(() => {
           if (fidbackTextShown.current) {
-            fidbackTextShown.current.innerText = "";
+            fidbackTextShown.current.innerText = ""
             fidbackTextShown.current.style.backgroundColor =
-              "rgb(109, 27, 16,0)";
+              "rgb(109, 27, 16,0)"
           }
-          props.setOpponent(null);
-          props.setRoomNum(null);
+          props.setOpponent(null)
+          props.setRoomNum(null)
 
-          navigate("/setbattle");
-          clearTimeout(timeTemp);
-        }, 2000);
-      });
+          navigate("/setbattle")
+          clearTimeout(timeTemp)
+        }, 2000)
+      })
 
       socket.on("checkRound", (data) => {
-        console.log(data);
-        setMyAction(null);
-        let myAction;
-        let opAction;
+        setMyAction(null)
+        let myAction
+        let opAction
 
         if (props.userName === data.nameOne) {
-          myAction = data.actionOne;
-          opAction = data.actionTwo;
+          myAction = data.actionOne
+          opAction = data.actionTwo
         } else {
-          myAction = data.actionTwo;
-          opAction = data.actionOne;
+          myAction = data.actionTwo
+          opAction = data.actionOne
         }
         if (opView.current) {
           // opView.current.innerText = opAction;
-          opView.current.style.backgroundColor = "#2197ff";
+          opView.current.style.backgroundColor = "#2197ff"
           opView.current.style.backgroundImage =
             opAction === "shot"
               ? `url(${aim})`
@@ -144,21 +139,21 @@ function BattlePage(props) {
               ? `url(${shield})`
               : opAction === "load"
               ? `url(${bullet})`
-              : null;
+              : null
 
           const timeTemp = setTimeout(() => {
             if (opView.current) {
-              opView.current.innerText = "";
-              opView.current.style.backgroundColor = "rgb(109, 27, 16,0)";
-              opView.current.style.backgroundImage = `none`;
+              opView.current.innerText = ""
+              opView.current.style.backgroundColor = "rgb(109, 27, 16,0)"
+              opView.current.style.backgroundImage = `none`
             }
-            clearTimeout(timeTemp);
-          }, 1000);
+            clearTimeout(timeTemp)
+          }, 1000)
         }
 
         if (myView.current) {
           // myView.current.innerText = myAction;
-          myView.current.style.backgroundColor = "#2197ff";
+          myView.current.style.backgroundColor = "#2197ff"
           myView.current.style.backgroundImage =
             myAction === "shot"
               ? `url(${aim})`
@@ -166,29 +161,27 @@ function BattlePage(props) {
               ? `url(${shield})`
               : myAction === "load"
               ? `url(${bullet})`
-              : null;
+              : null
 
           const timeTemp = setTimeout(() => {
             if (myView.current) {
-              myView.current.innerText = "";
-              myView.current.style.backgroundColor = "rgb(109, 27, 16,0)";
-              myView.current.style.backgroundImage = "none";
+              myView.current.innerText = ""
+              myView.current.style.backgroundColor = "rgb(109, 27, 16,0)"
+              myView.current.style.backgroundImage = "none"
             }
-            clearTimeout(timeTemp);
-          }, 1000);
+            clearTimeout(timeTemp)
+          }, 1000)
         }
-
-        console.log("myAction: ", myAction, "opAction: ", opAction);
 
         if (myAction === null || myAction === undefined) {
           if (opAction === "shot") {
             // i loose
-            strikesFunction("false");
+            strikesFunction("false")
           }
         }
 
         if (myAction === "shot") {
-          shots.current = shots.current - 1;
+          shots.current = shots.current - 1
 
           if (
             opAction === null ||
@@ -196,133 +189,129 @@ function BattlePage(props) {
             opAction === "load"
           ) {
             // i win
-            strikesFunction("true");
+            strikesFunction("true")
           }
 
           if (opAction === "shield") {
             // i miss
-            strikesFunction("miss");
+            strikesFunction("miss")
           }
         }
 
         if (myAction === "load") {
-          shots.current = shots.current + 1;
+          shots.current = shots.current + 1
 
           if (opAction === "shot") {
             // i loose
-            strikesFunction("false");
+            strikesFunction("false")
           }
         }
 
         if (myAction === "shield") {
           if (opAction === "shot") {
             // i def
-            strikesFunction("def");
+            strikesFunction("def")
           }
         }
-      });
+      })
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
     if (!props.userName) {
-      socket.emit("leaveRoom", props.roomNum);
-      props.setRoomNum(null);
-      navigate("/");
+      socket.emit("leaveRoom", props.roomNum)
+      props.setRoomNum(null)
+      navigate("/")
     }
-  }, [props.userName]);
+  }, [props.userName])
 
   onpopstate = (e) => {
-    console.log("157-157", props.roomNum);
-    // socket.emit("leaveRoom", roomNum);
-    leaveGameToGameLobby();
-  };
+    leaveGameToGameLobby()
+  }
 
   const strikesFunction = (winOrLoose) => {
-    console.log("winOrLoose: ", winOrLoose);
     if (winOrLoose === "true") {
-      opLives.current = opLives.current - 1;
+      opLives.current = opLives.current - 1
     } else if (winOrLoose === "false") {
-      lives.current = lives.current - 1;
+      lives.current = lives.current - 1
     }
 
     if (lives.current === 0) {
-      return gameOverFunction(false);
+      return gameOverFunction(false)
     }
     if (opLives.current === 0) {
-      return gameOverFunction(true);
+      return gameOverFunction(true)
     }
     if (fidbackTextShown.current) {
       if (winOrLoose === "true") {
-        fidbackTextShown.current.innerText = `פגיעה טובה!! =)`;
-        fidbackTextShown.current.style.backgroundColor = "rgb(19, 122, 91)";
+        fidbackTextShown.current.innerText = `פגיעה טובה!! =)`
+        fidbackTextShown.current.style.backgroundColor = "rgb(19, 122, 91)"
       } else if (winOrLoose === "miss") {
-        fidbackTextShown.current.innerText = `${props.opponent.userName} הגן על עצמו!! =(`;
-        fidbackTextShown.current.style.backgroundColor = "#2197ff59";
+        fidbackTextShown.current.innerText = `${props.opponent.userName} הגן על עצמו!! =(`
+        fidbackTextShown.current.style.backgroundColor = "#2197ff59"
       } else if (winOrLoose === "def") {
-        fidbackTextShown.current.innerText = `הגנת על עצמך!! =)`;
-        fidbackTextShown.current.style.backgroundColor = "#2197ff";
+        fidbackTextShown.current.innerText = `הגנת על עצמך!! =)`
+        fidbackTextShown.current.style.backgroundColor = "#2197ff"
       } else if (winOrLoose === "false") {
-        fidbackTextShown.current.innerText = `נפגעת!! =(`;
-        fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16)";
+        fidbackTextShown.current.innerText = `נפגעת!! =(`
+        fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16)"
       }
 
       const timeTemp = setTimeout(() => {
-        fidbackTextShown.current.innerText = "";
-        fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16,0)";
-        clearTimeout(timeTemp);
-      }, 1000);
+        fidbackTextShown.current.innerText = ""
+        fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16,0)"
+        clearTimeout(timeTemp)
+      }, 1000)
     }
-  };
+  }
   const gameOverFunction = (winOrLoose) => {
-    console.log("gameOverFunction: ", winOrLoose);
-    socket.emit("gameOver", props.roomNum);
-    setIsPlaying(false);
-    setGameOver(true);
+    socket.emit("gameOver", props.roomNum)
+    setIsPlaying(false)
+    setGameOver(true)
     if (fidbackTextShown.current) {
       if (winOrLoose) {
-        fidbackTextShown.current.innerText = `המשחק נגמר - ניצחת!! =)`;
-        fidbackTextShown.current.style.backgroundColor = "rgb(19, 122, 91)";
+        fidbackTextShown.current.innerText = `המשחק נגמר - ניצחת!! =)`
+        fidbackTextShown.current.style.backgroundColor = "rgb(19, 122, 91)"
       } else {
-        fidbackTextShown.current.innerText = `המשחק נגמר - הפסדת!! =(`;
-        fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16)";
+        fidbackTextShown.current.innerText = `המשחק נגמר - הפסדת!! =(`
+        fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16)"
       }
     }
-  };
+  }
 
   const setMeReadyFunc = () => {
-    setMeReadyToPlay(!meReadyToPlay);
-    socket.emit("meReadyToPlay", me, opponent, !meReadyToPlay, props.roomNum);
+    setMeReadyToPlay(!meReadyToPlay)
+    socket.emit("meReadyToPlay", me, opponent, !meReadyToPlay, props.roomNum)
 
     if (opponentReadyToPlay && !meReadyToPlay) {
-      socket.emit("openingGame", props.roomNum);
+      socket.emit("openingGame", props.roomNum)
     }
-  };
+  }
 
   const setMyActionFunction = (myAction) => {
     if (myAction === "shot") {
       if (shots.current > 0) {
-        setMyAction(myAction);
-        socket.emit("myAction", props.roomNum, myAction);
+        setMyAction(myAction)
+        socket.emit("myAction", props.roomNum, myAction)
       } else {
         if (fidbackTextShown.current) {
-          fidbackTextShown.current.innerText = `אין לך יריות!! =)`;
-          fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16)";
+          fidbackTextShown.current.innerText = `אין לך יריות!! =)`
+          fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16)"
           const timeTemp = setTimeout(() => {
             if (fidbackTextShown.current) {
-              fidbackTextShown.current.innerText = "";
+              fidbackTextShown.current.innerText = ""
               fidbackTextShown.current.style.backgroundColor =
-                "rgb(109, 27, 16,0)";
+                "rgb(109, 27, 16,0)"
             }
-            clearTimeout(timeTemp);
-          }, 500);
+            clearTimeout(timeTemp)
+          }, 500)
         }
       }
     } else {
-      setMyAction(myAction);
-      socket.emit("myAction", props.roomNum, myAction);
+      setMyAction(myAction)
+      socket.emit("myAction", props.roomNum, myAction)
     }
-  };
+  }
 
   const reMatchOffer = () => {
     if (iOfferedRemach) {
@@ -331,29 +320,28 @@ function BattlePage(props) {
         props.roomNum,
         props.settings.gameTime,
         props.settings.gameLives
-      );
+      )
 
       socket.emit("rematchOffer", props.roomNum, props.opponent, (answer) => {
         if (answer) {
-          setIsWaitingForRematch(true);
+          setIsWaitingForRematch(true)
         } else {
-          setOpponentLeft(true);
-          navigate("/setbattle");
+          setOpponentLeft(true)
+          navigate("/setbattle")
         }
-      });
+      })
     } else if (rematchOfferToYou) {
-      socket.emit("openingGame", props.roomNum);
-      setGameOver(false);
-      setIsPlaying(true);
+      socket.emit("openingGame", props.roomNum)
+      setGameOver(false)
+      setIsPlaying(true)
     }
-  };
+  }
 
   const leaveGameToGameLobby = (leftHow) => {
-    console.log("here 265", props.roomNum);
-    socket.emit("leaveRoom", props.roomNum);
-    props.setRoomNum(null);
-    navigate("/setbattle");
-  };
+    socket.emit("leaveRoom", props.roomNum)
+    props.setRoomNum(null)
+    navigate("/setbattle")
+  }
 
   return (
     <div className="battlePageDiv">
@@ -369,7 +357,7 @@ function BattlePage(props) {
             <button
               className="reMatchBtn"
               onClick={() => {
-                reMatchOffer();
+                reMatchOffer()
               }}
             >
               {rematchOfferToYou
@@ -387,7 +375,7 @@ function BattlePage(props) {
               onClick={() => {
                 leaveGameToGameLobby(
                   rematchOfferToYou ? "rejectAndGoBack" : "GoBack"
-                );
+                )
               }}
             >
               {rematchOfferToYou ? "דחה וחזור למשחקים" : "חזור למשחקים"}
@@ -409,7 +397,7 @@ function BattlePage(props) {
             className="backToGames"
             size={30}
             onClick={() => {
-              leaveGameToGameLobby("GoBack");
+              leaveGameToGameLobby("GoBack")
             }}
           />
         </div>
@@ -464,7 +452,7 @@ function BattlePage(props) {
                 : "rgb(109, 27, 16)",
             }}
             onClick={() => {
-              setMeReadyFunc();
+              setMeReadyFunc()
             }}
           >
             {meReadyToPlay ? "אני מוכן לשחק" : "אני לא מוכן לשחק"}
@@ -500,7 +488,7 @@ function BattlePage(props) {
             border: myAction === "load" ? "solid 1px white" : "none",
           }}
           onClick={() => {
-            setMyActionFunction("load");
+            setMyActionFunction("load")
           }}
         >
           טעינה
@@ -512,7 +500,7 @@ function BattlePage(props) {
             border: myAction === "shot" ? "solid 1px white" : "none",
           }}
           onClick={() => {
-            setMyActionFunction("shot");
+            setMyActionFunction("shot")
           }}
         >
           ירייה
@@ -524,7 +512,7 @@ function BattlePage(props) {
             border: myAction === "shield" ? "solid 1px white" : "none",
           }}
           onClick={() => {
-            setMyActionFunction("shield");
+            setMyActionFunction("shield")
           }}
         >
           הגנה
@@ -544,7 +532,7 @@ function BattlePage(props) {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default BattlePage;
+export default BattlePage

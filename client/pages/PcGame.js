@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react"
 import {
   BrowserRouter as Router,
   Routes,
@@ -6,95 +6,86 @@ import {
   Navigate,
   useLocation,
   useNavigate,
-} from "react-router-dom";
-import Invitation from "../comps/Invitation";
-import { BsBackspaceFill } from "react-icons/bs";
-import { AiOutlineHeart } from "react-icons/ai";
-import { GiBullets } from "react-icons/gi";
-import SettingsOption from "../comps/SettingsOption";
-import aim from "../assets/aim.png";
-import bullet from "../assets/bullet.png";
-import shield from "../assets/shield.png";
-import io from "socket.io-client";
-import url from "../url";
+} from "react-router-dom"
+import Invitation from "../comps/Invitation"
+import { BsBackspaceFill } from "react-icons/bs"
+import { AiOutlineHeart } from "react-icons/ai"
+import { GiBullets } from "react-icons/gi"
+import SettingsOption from "../comps/SettingsOption"
+import aim from "../assets/aim.png"
+import bullet from "../assets/bullet.png"
+import shield from "../assets/shield.png"
+import io from "socket.io-client"
+import url from "../url"
 
-const socket = io.connect(url + "/");
+const socket = io.connect(url + "/")
 
 function PcGame(props) {
-  const navigate = useNavigate();
-  const [me, setMe] = useState();
-  const firstEnter = useRef(true);
-  const fidbackTextShown = useRef();
+  const navigate = useNavigate()
+  const [me, setMe] = useState()
+  const firstEnter = useRef(true)
+  const fidbackTextShown = useRef()
   //settings
   const [settings, setSettings] = useState({
     gameTime: 3,
     gameLives: 2,
-  });
+  })
 
   // flow consts
-  const [meReadyToPlay, setMeReadyToPlay] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
+  const [meReadyToPlay, setMeReadyToPlay] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [gameOver, setGameOver] = useState(false)
 
   // game consts
-  const myAction = useRef(null);
-  const myView = useRef();
-  const opView = useRef();
-  const shots = useRef(0);
-  const lives = useRef(0);
-  const opLives = useRef(0);
-  const [time, setTime] = useState(null);
-  const [openingTime, setOpeningTime] = useState(null);
+  const myAction = useRef(null)
+  const myView = useRef()
+  const opView = useRef()
+  const shots = useRef(0)
+  const lives = useRef(0)
+  const opLives = useRef(0)
+  const [time, setTime] = useState(null)
+  const [openingTime, setOpeningTime] = useState(null)
 
   useEffect(() => {
     if (firstEnter.current) {
-      setMe({ userName: props.userName, id: socket.id });
-      firstEnter.current = false;
+      setMe({ userName: props.userName, id: socket.id })
+      firstEnter.current = false
 
       socket.emit("updateMe", {
         userName: props.userName,
         id: socket.id,
         where: "In Pc Game!",
         action: null,
-      });
+      })
 
       socket.on("invitation", (userInviteYou) => {
-        props.setOpponent(userInviteYou);
-        props.setIsBeingInvited(true);
-      });
+        props.setOpponent(userInviteYou)
+        props.setIsBeingInvited(true)
+      })
 
       socket.on("openingTestFromServer", (time) => {
-        setGameOver(false);
-        setIsPlaying(true);
-        setTime(null);
-        shots.current = 0;
-        console.log("settings: ", settings);
+        setGameOver(false)
+        setIsPlaying(true)
+        setTime(null)
+        shots.current = 0
 
         if (fidbackTextShown.current) {
-          fidbackTextShown.current.innerText = "";
-          fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16,0)";
+          fidbackTextShown.current.innerText = ""
+          fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16,0)"
         }
-        console.log("TIME opening FROM SERVER: ", time);
-        setOpeningTime(time);
-      });
+        setOpeningTime(time)
+      })
 
       socket.on("roundInTestFromServer", (time) => {
-        console.log("TIME FROM SERVER: ", time);
-        setTime(time);
-      });
+        setTime(time)
+      })
 
       socket.on("checkRound", (pcAction) => {
-        let myActionLocal = myAction.current;
-        console.log(
-          "myActionLocalmyActionLocal",
-          myActionLocal,
-          myAction.current
-        );
-        let opAction = pcAction;
-        myAction.current = null;
+        let myActionLocal = myAction.current
+        let opAction = pcAction
+        myAction.current = null
         if (opView.current) {
-          // opView.current.innerText = opAction;
-          opView.current.style.backgroundColor = "#2197ff";
+          opView.current.style.backgroundColor = "#2197ff"
           opView.current.style.backgroundImage =
             opAction === "shot"
               ? `url(${aim})`
@@ -102,21 +93,20 @@ function PcGame(props) {
               ? `url(${shield})`
               : opAction === "load"
               ? `url(${bullet})`
-              : null;
+              : null
 
           const timeTemp = setTimeout(() => {
             if (opView.current) {
-              opView.current.innerText = "";
-              opView.current.style.backgroundColor = "rgb(109, 27, 16,0)";
-              opView.current.style.backgroundImage = `none`;
+              opView.current.innerText = ""
+              opView.current.style.backgroundColor = "rgb(109, 27, 16,0)"
+              opView.current.style.backgroundImage = `none`
             }
-            clearTimeout(timeTemp);
-          }, 1000);
+            clearTimeout(timeTemp)
+          }, 1000)
         }
 
         if (myView.current) {
-          // myView.current.innerText = myActionLocal;
-          myView.current.style.backgroundColor = "#2197ff";
+          myView.current.style.backgroundColor = "#2197ff"
           myView.current.style.backgroundImage =
             myActionLocal === "shot"
               ? `url(${aim})`
@@ -124,29 +114,27 @@ function PcGame(props) {
               ? `url(${shield})`
               : myActionLocal === "load"
               ? `url(${bullet})`
-              : null;
+              : null
 
           const timeTemp = setTimeout(() => {
             if (myView.current) {
-              myView.current.innerText = "";
-              myView.current.style.backgroundColor = "rgb(109, 27, 16,0)";
-              myView.current.style.backgroundImage = "none";
+              myView.current.innerText = ""
+              myView.current.style.backgroundColor = "rgb(109, 27, 16,0)"
+              myView.current.style.backgroundImage = "none"
             }
-            clearTimeout(timeTemp);
-          }, 1000);
+            clearTimeout(timeTemp)
+          }, 1000)
         }
-
-        console.log("myActionLocal: ", myActionLocal, "opAction: ", opAction);
 
         if (myActionLocal === null || myActionLocal === undefined) {
           if (opAction === "shot") {
             // i loose
-            strikesFunction("false");
+            strikesFunction("false")
           }
         }
 
         if (myActionLocal === "shot") {
-          shots.current = shots.current - 1;
+          shots.current = shots.current - 1
 
           if (
             opAction === null ||
@@ -154,152 +142,149 @@ function PcGame(props) {
             opAction === "load"
           ) {
             // i win
-            strikesFunction("true");
+            strikesFunction("true")
           }
 
           if (opAction === "shield") {
             // i miss
-            strikesFunction("miss");
+            strikesFunction("miss")
           }
         }
 
         if (myActionLocal === "load") {
-          shots.current = shots.current + 1;
+          shots.current = shots.current + 1
 
           if (opAction === "shot") {
             // i loose
-            strikesFunction("false");
+            strikesFunction("false")
           }
         }
 
         if (myActionLocal === "shield") {
           if (opAction === "shot") {
             // i def
-            strikesFunction("def");
+            strikesFunction("def")
           }
         }
-      });
+      })
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
     if (!props.userName) {
-      navigate("/");
+      navigate("/")
     }
-  }, [props.userName]);
+  }, [props.userName])
 
   onpopstate = (e) => {
-    leaveGameToGameLobby();
-  };
+    leaveGameToGameLobby()
+  }
 
   const strikesFunction = (winOrLoose) => {
-    console.log("winOrLoose: ", winOrLoose);
     if (winOrLoose === "true") {
-      opLives.current = opLives.current - 1;
+      opLives.current = opLives.current - 1
     } else if (winOrLoose === "false") {
-      lives.current = lives.current - 1;
+      lives.current = lives.current - 1
     }
 
     if (lives.current === 0) {
-      return gameOverFunction(false);
+      return gameOverFunction(false)
     }
     if (opLives.current === 0) {
-      return gameOverFunction(true);
+      return gameOverFunction(true)
     }
     if (fidbackTextShown.current) {
       if (winOrLoose === "true") {
-        fidbackTextShown.current.innerText = `פגיעה טובה!! =)`;
-        fidbackTextShown.current.style.backgroundColor = "rgb(19, 122, 91)";
+        fidbackTextShown.current.innerText = `פגיעה טובה!! =)`
+        fidbackTextShown.current.style.backgroundColor = "rgb(19, 122, 91)"
       } else if (winOrLoose === "miss") {
-        fidbackTextShown.current.innerText = `מחשב הגן על עצמו!! =(`;
-        fidbackTextShown.current.style.backgroundColor = "#2197ff59";
+        fidbackTextShown.current.innerText = `מחשב הגן על עצמו!! =(`
+        fidbackTextShown.current.style.backgroundColor = "#2197ff59"
       } else if (winOrLoose === "def") {
-        fidbackTextShown.current.innerText = `הגנת על עצמך!! =)`;
-        fidbackTextShown.current.style.backgroundColor = "#2197ff";
+        fidbackTextShown.current.innerText = `הגנת על עצמך!! =)`
+        fidbackTextShown.current.style.backgroundColor = "#2197ff"
       } else if (winOrLoose === "false") {
-        fidbackTextShown.current.innerText = `נפגעת!! =(`;
-        fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16)";
+        fidbackTextShown.current.innerText = `נפגעת!! =(`
+        fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16)"
       }
 
       const timeTemp = setTimeout(() => {
-        fidbackTextShown.current.innerText = "";
-        fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16,0)";
-        clearTimeout(timeTemp);
-      }, 1000);
+        fidbackTextShown.current.innerText = ""
+        fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16,0)"
+        clearTimeout(timeTemp)
+      }, 1000)
     }
-  };
+  }
 
   const gameOverFunction = (winOrLoose) => {
-    socket.emit("endTest");
-    console.log("gameOverFunction: ", winOrLoose);
-    setIsPlaying(false);
-    setGameOver(true);
+    socket.emit("endTest")
+    setIsPlaying(false)
+    setGameOver(true)
     if (fidbackTextShown.current) {
       if (winOrLoose) {
-        fidbackTextShown.current.innerText = `המשחק נגמר - ניצחת!! =)`;
-        fidbackTextShown.current.style.backgroundColor = "rgb(19, 122, 91)";
+        fidbackTextShown.current.innerText = `המשחק נגמר - ניצחת!! =)`
+        fidbackTextShown.current.style.backgroundColor = "rgb(19, 122, 91)"
       } else {
-        fidbackTextShown.current.innerText = `המשחק נגמר - הפסדת!! =(`;
-        fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16)";
+        fidbackTextShown.current.innerText = `המשחק נגמר - הפסדת!! =(`
+        fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16)"
       }
     }
-  };
+  }
 
   const setMeReadyFunc = () => {
-    setMeReadyToPlay(true);
-    console.table(settings);
-    lives.current = settings.gameLives;
-    opLives.current = settings.gameLives;
-    socket.emit("openingTest", settings.gameTime);
-  };
+    setMeReadyToPlay(true)
+    lives.current = settings.gameLives
+    opLives.current = settings.gameLives
+    socket.emit("openingTest", settings.gameTime)
+  }
 
   const actionFunction = (myActionInFunc) => {
     if (myActionInFunc === "shot") {
       if (shots.current > 0) {
-        myAction.current = myActionInFunc;
+        myAction.current = myActionInFunc
       } else {
         if (fidbackTextShown.current) {
-          fidbackTextShown.current.innerText = `אין לך יריות!! =)`;
-          fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16)";
+          fidbackTextShown.current.innerText = `אין לך יריות!! =)`
+          fidbackTextShown.current.style.backgroundColor = "rgb(109, 27, 16)"
           const timeTemp = setTimeout(() => {
             if (fidbackTextShown.current) {
-              fidbackTextShown.current.innerText = "";
+              fidbackTextShown.current.innerText = ""
               fidbackTextShown.current.style.backgroundColor =
-                "rgb(109, 27, 16,0)";
+                "rgb(109, 27, 16,0)"
             }
-            clearTimeout(timeTemp);
-          }, 500);
+            clearTimeout(timeTemp)
+          }, 500)
         }
       }
     } else {
-      myAction.current = myActionInFunc;
+      myAction.current = myActionInFunc
     }
-  };
+  }
 
   const reMatchOffer = () => {
-    setGameOver(false);
-    setIsPlaying(true);
-    setMeReadyFunc();
-  };
+    setGameOver(false)
+    setIsPlaying(true)
+    setMeReadyFunc()
+  }
 
   const leaveGameToGameLobby = (leftHow) => {
-    socket.emit("endTest");
-    navigate("/home");
-  };
+    socket.emit("endTest")
+    navigate("/home")
+  }
 
   const acceptOrDeclineGame = (yesOrNo) => {
     if (yesOrNo === "yes") {
-      props.setIsBeingInvited(false);
+      props.setIsBeingInvited(false)
       socket.emit("acceptGameOffer", me, props.opponent, (answer) => {
-        props.setRoomNum(answer);
-        navigate(`/battle/${props.opponent.userName}-vs-${props.userName}`);
-      });
+        props.setRoomNum(answer)
+        navigate(`/battle/${props.opponent.userName}-vs-${props.userName}`)
+      })
     } else if (yesOrNo === "no") {
-      props.setIsBeingInvited(false);
-      socket.emit("diclineGameOffer", me, props.opponent);
-      props.setOpponent(null);
+      props.setIsBeingInvited(false)
+      socket.emit("diclineGameOffer", me, props.opponent)
+      props.setOpponent(null)
     }
-  };
+  }
 
   return (
     <div className="battlePageDiv">
@@ -331,7 +316,7 @@ function PcGame(props) {
             <button
               className="reMatchBtn"
               onClick={() => {
-                reMatchOffer();
+                reMatchOffer()
               }}
             >
               משחק חוזר?
@@ -339,7 +324,7 @@ function PcGame(props) {
             <button
               className="goToGamesLobyBtn"
               onClick={() => {
-                leaveGameToGameLobby("GoBack");
+                leaveGameToGameLobby("GoBack")
               }}
             >
               חזור למשחקים
@@ -359,7 +344,7 @@ function PcGame(props) {
             className="backToGames"
             size={30}
             onClick={() => {
-              leaveGameToGameLobby("GoBack");
+              leaveGameToGameLobby("GoBack")
             }}
           />
         </div>
@@ -396,7 +381,7 @@ function PcGame(props) {
           <button
             className="gameBtnMed"
             onClick={() => {
-              setMeReadyFunc();
+              setMeReadyFunc()
             }}
           >
             התחל משחק
@@ -433,7 +418,7 @@ function PcGame(props) {
             border: myAction.current === "load" ? "solid 1px white" : "none",
           }}
           onClick={() => {
-            actionFunction("load");
+            actionFunction("load")
           }}
         >
           טעינה
@@ -446,7 +431,7 @@ function PcGame(props) {
             border: myAction.current === "shot" ? "solid 1px white" : "none",
           }}
           onClick={() => {
-            actionFunction("shot");
+            actionFunction("shot")
           }}
         >
           ירייה
@@ -459,7 +444,7 @@ function PcGame(props) {
             border: myAction.current === "shield" ? "solid 1px white" : "none",
           }}
           onClick={() => {
-            actionFunction("shield");
+            actionFunction("shield")
           }}
         >
           הגנה
@@ -479,7 +464,7 @@ function PcGame(props) {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default PcGame;
+export default PcGame

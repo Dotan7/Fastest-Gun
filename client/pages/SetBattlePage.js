@@ -1,145 +1,140 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react"
 import {
   BrowserRouter as Router,
   useLocation,
   useNavigate,
-} from "react-router-dom";
-import io from "socket.io-client";
-import url from "../url";
-import SettingsOption from "../comps/SettingsOption";
-import Invitation from "../comps/Invitation";
-import { FaHome } from "react-icons/fa";
+} from "react-router-dom"
+import io from "socket.io-client"
+import url from "../url"
+import SettingsOption from "../comps/SettingsOption"
+import Invitation from "../comps/Invitation"
+import { FaHome } from "react-icons/fa"
 
-const socket = io.connect(url + "/");
+const socket = io.connect(url + "/")
 
 function SetBattlePage(props) {
-  const navigate = useNavigate();
-  const [me, setMe] = useState();
-  const contactInput = useRef();
+  const navigate = useNavigate()
+  const [me, setMe] = useState()
+  const contactInput = useRef()
 
   // sender consts
-  const [tryingToConnect, setTryingToConnect] = useState(false);
-  const [waitingToAnwerFromUser, setwaitingToAnwerFromUser] = useState(false);
-  const [notExistOrNotOnline, setnotExistOrNotOnline] = useState(false);
-  const [hasBeenDeclined, setHasBeenDeclined] = useState(false);
-  const [hasBeenAccepted, setHasBeenAccepted] = useState(false);
-  const [inGameCantPlayRightNow, setInGameCantPlayRightNow] = useState(false);
-  // receiver consts at app //
+  const [tryingToConnect, setTryingToConnect] = useState(false)
+  const [waitingToAnwerFromUser, setwaitingToAnwerFromUser] = useState(false)
+  const [notExistOrNotOnline, setnotExistOrNotOnline] = useState(false)
+  const [hasBeenDeclined, setHasBeenDeclined] = useState(false)
+  const [hasBeenAccepted, setHasBeenAccepted] = useState(false)
+  const [inGameCantPlayRightNow, setInGameCantPlayRightNow] = useState(false)
 
-  const firstEnter = useRef(true);
+  const firstEnter = useRef(true)
 
   useEffect(() => {
     if (firstEnter.current) {
-      setMe({ userName: props.userName, id: socket.id });
-      firstEnter.current = false;
+      setMe({ userName: props.userName, id: socket.id })
+      firstEnter.current = false
       socket.emit("updateMe", {
         userName: props.userName,
         id: socket.id,
         where: "set Battle page - Game set",
         action: null,
-      });
+      })
 
       socket.on("invitation", (userInviteYou) => {
-        props.setOpponent(userInviteYou);
-        props.setIsBeingInvited(true);
-      });
+        props.setOpponent(userInviteYou)
+        props.setIsBeingInvited(true)
+      })
 
       socket.on("yourOfferHasBeenDeclined", (userRejectYou) => {
-        setwaitingToAnwerFromUser(false);
-        setHasBeenDeclined(true);
+        setwaitingToAnwerFromUser(false)
+        setHasBeenDeclined(true)
         const tempTime = setTimeout(() => {
-          setHasBeenDeclined(false);
-          clearTimeout(tempTime);
-        }, 3000);
-      });
+          setHasBeenDeclined(false)
+          clearTimeout(tempTime)
+        }, 3000)
+      })
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
     socket.on("yourOfferHasBeenAccepted", (userAcceptYou, roomNum) => {
-      props.setIsBeingInvited(false);
-      setwaitingToAnwerFromUser(false);
-      setHasBeenAccepted(true);
-      props.setOpponent(userAcceptYou);
-      console.log("i invite- got from him: ", roomNum);
-      props.setRoomNum(roomNum);
+      props.setIsBeingInvited(false)
+      setwaitingToAnwerFromUser(false)
+      setHasBeenAccepted(true)
+      props.setOpponent(userAcceptYou)
+      props.setRoomNum(roomNum)
       socket.emit(
         "gameSettings",
         roomNum,
         props.settings.gameTime,
         props.settings.gameLives
-      );
-
-      navigate(`/battle/${props.userName}-vs-${userAcceptYou.userName}`);
-
+      )
+      navigate(`/battle/${props.userName}-vs-${userAcceptYou.userName}`)
       const tempTime = setTimeout(() => {
-        setHasBeenAccepted(false);
-        clearTimeout(tempTime);
-      }, 3000);
-    });
-  }, [props.settings]);
+        setHasBeenAccepted(false)
+        clearTimeout(tempTime)
+      }, 3000)
+    })
+  }, [props.settings])
 
   useEffect(() => {
     if (!props.userName) {
-      navigate("/");
+      navigate("/")
     }
-  }, [props.userName]);
+  }, [props.userName])
 
   const tryToMakeContact = (e) => {
-    e.preventDefault();
+    e.preventDefault()
     if (
       contactInput.current.value === null ||
       contactInput.current.value === ""
     ) {
-      alert("נא להזין שם משתמש אליו נרצה לשלוח בקשה");
-      return;
+      alert("נא להזין שם משתמש אליו נרצה לשלוח בקשה")
+      return
     }
     if (contactInput.current.value === props.userName) {
-      alert("אי אפשר לשלוח בקשה לעצמך");
-      return;
+      alert("אי אפשר לשלוח בקשה לעצמך")
+      return
     }
-    setTryingToConnect(true);
+    setTryingToConnect(true)
     socket.emit(
       "tryToConnectFromFront",
       contactInput.current.value,
       me,
       (answer) => {
         if (answer === "notExistOrNotOnline") {
-          setTryingToConnect(false);
-          setnotExistOrNotOnline(true);
+          setTryingToConnect(false)
+          setnotExistOrNotOnline(true)
           const tempTime = setTimeout(() => {
-            setnotExistOrNotOnline(false);
-            clearTimeout(tempTime);
-          }, 3000);
+            setnotExistOrNotOnline(false)
+            clearTimeout(tempTime)
+          }, 3000)
         } else if (answer === "waitingForAnswerFromUser") {
-          setTryingToConnect(false);
-          setwaitingToAnwerFromUser(true);
+          setTryingToConnect(false)
+          setwaitingToAnwerFromUser(true)
         } else if (answer === "inGameNow") {
-          setTryingToConnect(false);
-          setInGameCantPlayRightNow(true);
+          setTryingToConnect(false)
+          setInGameCantPlayRightNow(true)
           const tempTime = setTimeout(() => {
-            setInGameCantPlayRightNow(false);
-            clearTimeout(tempTime);
-          }, 3000);
+            setInGameCantPlayRightNow(false)
+            clearTimeout(tempTime)
+          }, 3000)
         }
       }
-    );
-  };
+    )
+  }
 
   const acceptOrDeclineGame = (yesOrNo) => {
     if (yesOrNo === "yes") {
-      props.setIsBeingInvited(false);
+      props.setIsBeingInvited(false)
       socket.emit("acceptGameOffer", me, props.opponent, (answer) => {
-        console.log("i accepted offer: ", answer);
-        props.setRoomNum(answer);
-        navigate(`/battle/${props.opponent.userName}-vs-${props.userName}`);
-      });
+        props.setRoomNum(answer)
+        navigate(`/battle/${props.opponent.userName}-vs-${props.userName}`)
+      })
     } else if (yesOrNo === "no") {
-      props.setIsBeingInvited(false);
-      socket.emit("diclineGameOffer", me, props.opponent);
-      props.setOpponent(null);
+      props.setIsBeingInvited(false)
+      socket.emit("diclineGameOffer", me, props.opponent)
+      props.setOpponent(null)
     }
-  };
+  }
 
   return (
     <div className="battlePageDiv">
@@ -156,7 +151,7 @@ function SetBattlePage(props) {
           className=""
           size={40}
           onClick={() => {
-            navigate("/home");
+            navigate("/home")
           }}
         />
       </div>
@@ -202,7 +197,7 @@ function SetBattlePage(props) {
           <button
             className="gameBtnMed tryContactBtn"
             onClick={(e) => {
-              tryToMakeContact(e);
+              tryToMakeContact(e)
             }}
           >
             הזמן חבר/ה
@@ -210,7 +205,7 @@ function SetBattlePage(props) {
         </form>
       </div>
     </div>
-  );
+  )
 }
 
-export default SetBattlePage;
+export default SetBattlePage
