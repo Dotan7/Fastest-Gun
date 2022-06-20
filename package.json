@@ -1,16 +1,22 @@
 {
-  "name": "server_guns",
+  "name": "fastest_gun",
   "version": "1.0.0",
+  "description": "",
   "main": "index.js",
-  "license": "MIT",
-  "dependencies": {
-    "dotenv": "^10.0.0",
-    "express": "^4.17.1",
-    "nodemon": "^2.0.12",
-    "pm2": "^5.1.2",
-    "socket.io": "^4.1.3"
-  },
   "scripts": {
-    "start": "node server.js"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "PROD=true node index.js",
+    "postinstall": "cd ./client && npm install",
+    "dev": "node index.js"
+  },
+  "author": "DOT.A.",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.1",
+    "http": "^0.0.1-security",
+    "path": "^0.12.7",
+    "socket.io": "^4.5.1"
   }
 }

@@ -1,4 +1,4 @@
-// const url = 'https://884d-109-67-6-126.ngrok.io'
-const url = 'https://servergunsdot.herokuapp.com'
+const url = "https://fastestgun.herokuapp.com";
+// const url = "http://localhost:3016";
 
-export default url
+export default url;
